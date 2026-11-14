@@ -9,6 +9,10 @@ import type {
 
 const API_VERSION = '2026-04'
 
+function isShopifyConfigured() {
+  return Boolean(process.env.SHOPIFY_STORE_DOMAIN && process.env.SHOPIFY_STOREFRONT_ACCESS_TOKEN)
+}
+
 function getEndpoint() {
   const domain = process.env.SHOPIFY_STORE_DOMAIN
   if (!domain) throw new Error('SHOPIFY_STORE_DOMAIN is not set')
@@ -97,6 +101,7 @@ const CART = `
 const HIDDEN_COLLECTIONS = new Set(['frontpage'])
 
 export async function getCollections(): Promise<CollectionSummary[]> {
+  if (!isShopifyConfigured()) return []
   const data = await shopifyFetch<{
     collections: {
       nodes: (Omit<CollectionSummary, 'productCount' | 'image'> & {
@@ -148,6 +153,7 @@ export async function getProducts(
   sort: SortOption = 'featured',
   first = 50,
 ): Promise<ProductCardData[]> {
+  if (!isShopifyConfigured()) return []
   const { sortKey, reverse } = PRODUCT_SORT[sort]
   const data = await shopifyFetch<{ products: { nodes: ProductCardData[] } }>({
     query: `
@@ -167,6 +173,7 @@ export async function getCollection(
   handle: string,
   sort: SortOption = 'featured',
 ): Promise<Collection | null> {
+  if (!isShopifyConfigured()) return null
   const { sortKey, reverse } = COLLECTION_SORT[sort]
   const data = await shopifyFetch<{ collection: Collection | null }>({
     query: `
@@ -189,6 +196,7 @@ export async function getCollection(
 }
 
 export async function getProduct(handle: string): Promise<Product | null> {
+  if (!isShopifyConfigured()) return null
   const data = await shopifyFetch<{ product: Product | null }>({
     query: `
       query Product($handle: String!) {
@@ -226,6 +234,7 @@ export async function getProduct(handle: string): Promise<Product | null> {
 }
 
 export async function fetchCart(cartId: string): Promise<Cart | null> {
+  if (!isShopifyConfigured()) return null
   const data = await shopifyFetch<{ cart: Cart | null }>({
     query: `${CART} query Cart($id: ID!) { cart(id: $id) { ...CartFields } }`,
     variables: { id: cartId },

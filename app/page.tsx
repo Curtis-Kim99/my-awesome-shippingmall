@@ -28,7 +28,11 @@ export default async function HomePage() {
             전체 보기 <ArrowRight className="size-4" aria-hidden="true" />
           </Link>
         </div>
-        <ProductGrid products={products} />
+        {products.length > 0 ? (
+          <ProductGrid products={products} />
+        ) : (
+          <p className="py-20 text-center text-muted-foreground">등록된 제품이 없습니다.</p>
+        )}
       </section>
       <ValueProps />
     </>
